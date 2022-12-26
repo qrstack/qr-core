@@ -1,0 +1,30 @@
+[tool.poetry]
+name = "qr-core"
+version = "0.1.0"
+description = ""
+authors = ["prd-tan-le <tan.le@paradox.ai>"]
+packages = [{include = "poetry_scripts", from = "."}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+asgiref = "3.6.0"
+Django = "4.1.4"
+gunicorn = "20.1.0"
+sqlparse = "0.4.3"
+django-environ = "^0.9.0"
+split-settings = "^1.0.0"
+
+[tool.poetry.dev-dependencies]
+
+[tool.poetry.scripts]
+makemigrations  = "poetry_scripts.django:makemigrations"
+migrate         = "poetry_scripts.django:migrate"
+qcluster        = "poetry_scripts.django:qcluster"
+shell           = "poetry_scripts.django:shell"
+
+server          = "poetry_scripts.django:runserver"
+gunicorn        = "poetry_scripts.django:gunicorn"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
