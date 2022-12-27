@@ -85,7 +85,7 @@ package-lock.json
 /src/templates/emails/builder/tmpl/rendered
 *sent_emails*
 /src/cache/*
-*.sh
+# *.sh
 /src/test.py
 /src/script.py
 /src/script/*
