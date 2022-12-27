@@ -5,7 +5,7 @@ from split_settings.tools import optional, include
 
 env = environ.Env()
 
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent
 
 env_file = BASE_DIR / "config.env"
 if env_file.exists():

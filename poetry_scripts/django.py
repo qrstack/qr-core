@@ -21,7 +21,7 @@ def noop(*args, **kwargs):
 
 def boot_django():
     syspath.append(str(PROJECT_ROOT))
-    environ.setdefault("DJANGO_SETTINGS_MODULE", "src.settings")
+    environ.setdefault("DJANGO_SETTINGS_MODULE", "aicore.settings")
     django.setup()
 
 
