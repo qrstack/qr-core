@@ -1,13 +1,32 @@
 version: "3.3"
 
 services:
+  mysql:
+    restart: always
+    image: "mysql:5.7.28"
+    container_name: qrstack_mysql
+    hostname: mysql
+    ports:
+      - "${DB_PORT}:3306"
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+    env_file:
+      - ./config.env
+    volumes:
+      - ./mysql:/etc/mysql/conf.d
+      - ./mysqldump/:/docker-entrypoint-initdb.d/
+      - mysql-data:/var/lib/mysql
+
+
   backend:
     restart: always
     build:
       context: .
       args:
         APP_ENVIRONMENT: development
-        SSH_PRIVATE_KEY: "${SSH_PRIVATE_KEY}"
+        SSH_PRIVATE_KEY: ${SSH_PRIVATE_KEY}
     container_name: "qrstack_backend"
     volumes:
       - .:/usr/src/app/
@@ -17,10 +36,16 @@ services:
       && python src/manage.py runserver 0.0.0.0:9090"
     environment:
       - PYTHONUNBUFFERED=1
+      - DB_HOST=mysql
+      - DB_PORT=3306
     env_file:
       - ./config.env
     ports:
-      - "${DB_PORT}:9090"
+      - "${BACKEND_PORT}:9090"
+    depends_on:
+      - mysql
+
 
 volumes:
   backend-data:
+  mysql-data:

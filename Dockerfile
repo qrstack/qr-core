@@ -1,7 +1,7 @@
 FROM python:3.10.9-slim-buster
 
 LABEL maintainer="qrstack"
-LABEL vendor="qr-core"
+LABEL vendor="qrstack-core"
 
 ARG APP_ENVIRONMENT
 ENV APP_ENVIRONMENT=${APP_ENVIRONMENT} \
@@ -34,9 +34,10 @@ RUN apt-get update && apt-get upgrade -y \
         python-mysqldb \
         libmagic1 \
         default-libmysqlclient-dev \
+        python3-pip \
     # Installing `poetry` package manager:
     # https://github.com/python-poetry/poetry
-    && curl -sSL 'https://install.python-poetry.org' | python - \
+    && curl -sSL 'https://install.python-poetry.org' | python3 - \
     && poetry --version \
     # Cleaning cache
     && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
@@ -51,25 +52,20 @@ RUN touch /root/.ssh/known_hosts
 RUN ssh-keyscan github.com >> /root/.ssh/known_hosts
 
 # Copy only requirement to cache in docker layer
-#COPY ./poetry.lock ./pyproject.toml /usr/src/app/
-#
-#RUN echo "$APP_ENVIRONMENT" \
-#    && poetry version \
-#    && poetry run pip install -U pip \
-#    && poetry install \
-#      $(if [ "$APP_ENVIRONMENT" = 'production' ]; then echo '--only main'; fi) \
-#      --no-interaction --no-ansi --no-root
-
-COPY requirements.txt /usr/src/app/
-COPY /requirements /usr/src/app/requirements
+COPY ./poetry.lock ./pyproject.toml /usr/src/app/
 
 RUN echo "$APP_ENVIRONMENT" \
-    && python3 -m pip install -r requirements.txt
+    && poetry version \
+    && poetry run pip install -U pip \
+    && poetry install \
+      $(if [ "$APP_ENVIRONMENT" = 'production' ]; then echo '--only main'; fi) \
+      --no-interaction --no-ansi --no-root
 
-#COPY ./docker-entrypoint.sh ./docker-entrypoint.sh
+COPY ./docker-entrypoint.sh ./docker-entrypoint.sh
 
-#RUN ["chmod", "+x", "/usr/src/app/docker-entrypoint.sh"]
+# run chmod on local first before building image
+RUN ["chmod", "+x", "/usr/src/app/docker-entrypoint.sh"]
 
-#ENTRYPOINT ["./docker-entrypoint.sh"]
+ENTRYPOINT ["./docker-entrypoint.sh"]
 
 COPY . .

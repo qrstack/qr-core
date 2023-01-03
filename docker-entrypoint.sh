@@ -2,11 +2,11 @@
 
 set -o errexit
 set -o nounset
-set -o pipefall
+set -o pipefail
 
 echo "Waiting for MySQL..."
 
-while ! nc -z mysql 4306; do
+while ! nc -z mysql 3306; do
   sleep 1
 done
 
