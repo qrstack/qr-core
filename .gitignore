@@ -123,3 +123,6 @@ s3_presign.txt
 /src/gunicorn_v2.conf.py
 /src/local_test/*
 /venv310/
+
+mysql
+mysqldump
