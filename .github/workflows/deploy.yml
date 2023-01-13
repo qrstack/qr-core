@@ -1,0 +1,46 @@
+name: 'Deployment'
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build:
+    name: Build and Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: ${{ secrets.AWS_REGION }}
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE }}
+          role-session-name: build-and-upload-to-s3-session
+
+      - name: Change Permissions
+        run: chmod -R +x ./.github
+
+      - name: Prepare Artifact
+        id: bundle
+        run: $GITHUB_WORKSPACE/.github/scripts/build.sh
+        env:
+          revision_key: ${{ secrets.CODEDEPLOY_REVISION_KEY }}
+
+      - name: Upload to S3
+        run: aws s3 cp ${{ secrets.CODEDEPLOY_REVISION_KEY }} s3://app/${{ secrets.AWS_DEPLOY_BUCKET }}
+        shell: bash
+
+      - name: Create CodeDeploy Deployment
+        id: deploy
+        run: |
+          aws deploy create-deployment \
+          --application-name ${{ secrets.CODEDEPLOY_APPLICATION_NAME }} \
+          --deployment-group-name ${{ secrets.CODEDEPLOY_DEPLOYMENT_GROUP_NAME }} \
+          --revision revisionType=S3 \
+          --s3-location=bucket=${{ secrets.AWS_DEPLOY_BUCKET }},key=app/${{ secrets.CODEDEPLOY_REVISION_KEY }},bundleType=tgz \
+          --ignore-application-stop-failures
